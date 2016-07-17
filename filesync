@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# filesync - A script for two way file syncronization using Unison
+# Copyright (C) 2016 Larry Jordan
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+### Configuration Variables
+# mac and ip of a local device (maybe a router) to test if we are on the home network
+LOCALMAC=00:13:ef:70:06:2c
+LOCALIP=192.168.123.2
+
+# When away from home, use this address to access your server
+REMOTE=0.0.0.0  # the wan ip or url
+
+# Check for accidental mass deletes or ransomware.
+# This file is not expected to be deleted, if it is, abort the process.
+check1="/home/larry/Documents/check1.txt"
+
+logfile=/home/larry/unison.log
+### End Configuration Variables
+
+instances=`ps -f -u $USER | grep "unison" | grep -v "grep" | wc -l`
+if [ $instances -ne 0 ]
+then
+   echo "Already running" $(date) &>> $logfile
+   exit 0
+fi
+
+#limit length of log file
+size=$(stat -c %s $logfile)
+if [ $size -gt 6000 ]
+then
+   tail -n 60 $logfile > $logfile.1 2>/dev/null
+   rm $logfile &>/dev/null
+   mv $logfile.1 $logfile
+fi
+
+# test check file
+if [ ! -e "$check1" ]
+then
+  echo "Error: file $check1 was not found." >> $logfile
+  exit 1
+fi
+
+ping -c 1 $LOCALIP &>/dev/null    # ping will update the arp table
+mac=$(/usr/sbin/arp -a $LOCALIP | /usr/bin/awk '{print $4}')
+if [ $mac = $LOCALMAC ]
+then
+   #date >> $logfile
+   /usr/bin/unison local -batch -terse &>/dev/null
+else
+   ping -c 1 $REMOTE &>/dev/null	# try ping remote connection
+   if [ $? = 0 ]
+   then
+      /usr/bin/unison remote -batch -terse &>/dev/null
+   fi
+fi
