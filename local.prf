@@ -1,4 +1,0 @@
-# Unison preferences file
-# default is local network connection
-root = ssh://192.168.11.2//data
-include common

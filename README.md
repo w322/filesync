@@ -1,6 +1,6 @@
 Filesync is a bash script for sycronizing files on a mobile computer with a backup host.  It uses [Unison](https://www.cis.upenn.edu/~bcpierce/unison/) for syncronization.
 
-## Featured
+## Features
 
 * Detects home network and connects to the appropriate address.
 * Checks for, and will not sycronize, if files have been accidentally deleted.

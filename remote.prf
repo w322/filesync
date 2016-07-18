@@ -1,3 +1,0 @@
-# Unison preferences file
-root = ssh://0.0.0.0:5900//data
-include common
