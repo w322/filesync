@@ -18,18 +18,19 @@
 
 
 ### Configuration Variables
-# mac and ip of a local device (maybe a router) to test if we are on the home network
-LOCALMAC=00:13:ef:70:06:2c
-LOCALIP=192.168.123.2
+# mac and ip of a local device (maybe a router) to test if we are on home network
+LOCALMAC=74:03:bd:47:11:c8  ### change to your router's mac address ###
+LOCALIP=192.168.11.1        ### change to your router's ip address  ###
 
-# When away from home, use this address to access your server
-REMOTE=0.0.0.0  # the wan ip or url
+# Log file.  Put the same logfile in your unison config.
+logfile=/home/larry/unison.log
 
-# Check for accidental mass deletes or ransomware.
+REMOTE=www.bing.com  # this is used only to check for active internet connection.
+
+# Check for accidental mass deletes or ransomware.  Unison does it's own check for missing data.
 # This file is not expected to be deleted, if it is, abort the process.
 check1="/home/larry/Documents/check1.txt"
 
-logfile=/home/larry/unison.log
 ### End Configuration Variables
 
 instances=`ps -f -u $USER | grep "unison" | grep -v "grep" | wc -l`
@@ -60,11 +61,11 @@ mac=$(/usr/sbin/arp -a $LOCALIP | /usr/bin/awk '{print $4}')
 if [ $mac = $LOCALMAC ]
 then
    #date >> $logfile
-   /usr/bin/unison local -batch -terse &>/dev/null
+   /usr/bin/nice /usr/bin/unison -batch -terse &>/dev/null  # this uses the default.prf profile
 else
    ping -c 1 $REMOTE &>/dev/null	# try ping remote connection
    if [ $? = 0 ]
    then
-      /usr/bin/unison remote -batch -terse &>/dev/null
+      /usr/bin/nice /usr/bin/unison remote -batch -terse &>/dev/null
    fi
 fi
